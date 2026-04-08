@@ -11,10 +11,10 @@ Axiom is a sovereign, open-source stack designed for AI Program Managers with a 
 - **Vault (Gitea):** Self-hosted Git for versioning SQL scripts, workflows, and IaC.
 
 ## Setup
-1. Run the stack: `docker-compose up -d`
+1. Run the stack: `docker compose up -d`
 2. Access services:
    - Sketch: http://localhost:9001
    - Governance: http://localhost:8080
    - Analytics: http://localhost:3000
    - Orchestration: http://localhost:5678
-   - Git Vault: http://localhost:3001
+   - Git Vault: http://localhost:3001doc
