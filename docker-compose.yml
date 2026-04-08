@@ -1,0 +1,93 @@
+# Axiom - AI Program Management Stack
+# Full "As-Code" Infrastructure including Penpot for Design
+
+services:
+  # --- SHARED DATABASE ---
+  axiom-db:
+    image: postgres:15
+    container_name: axiom-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: axiom_secure_2026
+      POSTGRES_DB: axiom_hub
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    restart: always
+
+  # --- SHARED CACHE (Required for Penpot) ---
+  axiom-redis:
+    image: redis:7
+    container_name: axiom-redis
+    restart: always
+
+  # --- GOVERNANCE: Baserow ---
+  axiom-governance:
+    image: baserow/baserow:1.24.2
+    container_name: axiom-governance
+    environment:
+      BASEROW_PUBLIC_URL: http://localhost:8080
+      DATABASE_HOST: axiom-db
+      DATABASE_PASSWORD: axiom_secure_2026
+    ports:
+      - "8080:80"
+    volumes:
+      - baserow_data:/baserow/data
+    restart: always
+
+  # --- ANALYTICS: Metabase ---
+  axiom-analytics:
+    image: metabase/metabase:latest
+    container_name: axiom-analytics
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: axiom_analytics_db
+      MB_DB_HOST: axiom-db
+      MB_DB_PASS: axiom_secure_2026
+    ports:
+      - "3000:3000"
+    restart: always
+
+  # --- ORCHESTRATION: n8n ---
+  axiom-bridge:
+    image: n8nio/n8n:latest
+    container_name: axiom-bridge
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=axiom-db
+      - DB_POSTGRESDB_PASSWORD=axiom_secure_2026
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    restart: always
+
+  # --- VERSIONING: Gitea ---
+  axiom-vault:
+    image: gitea/gitea:latest
+    container_name: axiom-vault
+    environment:
+      - GITEA__database__DB_TYPE=postgres
+      - GITEA__database__HOST=axiom-db:5432
+      - GITEA__database__PASS=axiom_secure_2026
+    ports:
+      - "3001:3000"
+    volumes:
+      - gitea_data:/data
+    restart: always
+
+  # --- DESIGN: Penpot (Backend & Frontend merged for simplified lab) ---
+  axiom-design:
+    image: penpotapp/backend:latest
+    container_name: axiom-design
+    environment:
+      - PENPOT_DATABASE_URI=postgresql://axiom-db/axiom_hub?user=admin&password=axiom_secure_2026
+      - PENPOT_REDIS_URI=redis://axiom-redis:6379/0
+    ports:
+      - "9001:9001"
+    restart: always
+
+volumes:
+  pg_data:
+  baserow_data:
+  n8n_data:
+  gitea_data:
