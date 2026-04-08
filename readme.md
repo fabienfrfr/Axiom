@@ -1,19 +1,19 @@
 # Axiom | AI Program Orchestration Platform
 
 ## Overview
-Axiom is a sovereign, open-source stack designed to manage complex AI programs. It integrates design, governance, automation, and analytics into a single "as-code" ecosystem.
+Axiom is a sovereign, open-source stack designed for AI Program Managers with a Technical Lead background. It prioritizes automation, SQL-driven insights, and versioned infrastructure.
 
 ## Component Map
-- **Design (Penpot):** System architecture sketching and UI/UX prototyping for dashboards.
-- **Governance (Baserow):** Relational database for roadmap tracking and asset management.
-- **Analytics (Metabase):** Business Intelligence powered by SQL queries.
-- **Bridge (n8n):** Workflow engine to automate data flow between Git and Governance.
-- **Vault (Gitea):** Git-based repository for IaC, SQL scripts, and n8n workflows.
+- **Sketch (Excalidraw):** Virtual whiteboard for system architecture and data flow diagrams.
+- **Governance (Baserow):** Relational database for strategic roadmap and asset tracking.
+- **Analytics (Metabase):** Business Intelligence powered by raw SQL queries.
+- **Bridge (n8n):** Orchestration engine connecting technical events (Git) to business KPIs.
+- **Vault (Gitea):** Self-hosted Git for versioning SQL scripts, workflows, and IaC.
 
 ## Setup
 1. Run the stack: `docker-compose up -d`
-2. Access endpoints:
-   - Design: http://localhost:9001
+2. Access services:
+   - Sketch: http://localhost:9001
    - Governance: http://localhost:8080
    - Analytics: http://localhost:3000
    - Orchestration: http://localhost:5678

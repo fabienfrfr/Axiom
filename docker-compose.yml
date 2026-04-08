@@ -1,8 +1,7 @@
 # Axiom - AI Program Management Stack
-# Full "As-Code" Infrastructure including Penpot for Design
 
 services:
-  # --- SHARED DATABASE ---
+  # --- SHARED DATABASE: Core persistence layer ---
   axiom-db:
     image: postgres:15
     container_name: axiom-db
@@ -14,13 +13,7 @@ services:
       - pg_data:/var/lib/postgresql/data
     restart: always
 
-  # --- SHARED CACHE (Required for Penpot) ---
-  axiom-redis:
-    image: redis:7
-    container_name: axiom-redis
-    restart: always
-
-  # --- GOVERNANCE: Baserow ---
+  # --- GOVERNANCE: Data structure & Roadmap (Baserow) ---
   axiom-governance:
     image: baserow/baserow:1.24.2
     container_name: axiom-governance
@@ -34,7 +27,7 @@ services:
       - baserow_data:/baserow/data
     restart: always
 
-  # --- ANALYTICS: Metabase ---
+  # --- ANALYTICS: SQL-based BI (Metabase) ---
   axiom-analytics:
     image: metabase/metabase:latest
     container_name: axiom-analytics
@@ -47,7 +40,7 @@ services:
       - "3000:3000"
     restart: always
 
-  # --- ORCHESTRATION: n8n ---
+  # --- ORCHESTRATION: Workflow automation (n8n) ---
   axiom-bridge:
     image: n8nio/n8n:latest
     container_name: axiom-bridge
@@ -61,7 +54,7 @@ services:
       - n8n_data:/home/node/.n8n
     restart: always
 
-  # --- VERSIONING: Gitea ---
+  # --- VERSIONING: Git repository (Gitea) ---
   axiom-vault:
     image: gitea/gitea:latest
     container_name: axiom-vault
@@ -75,15 +68,12 @@ services:
       - gitea_data:/data
     restart: always
 
-  # --- DESIGN: Penpot (Backend & Frontend merged for simplified lab) ---
-  axiom-design:
-    image: penpotapp/backend:latest
-    container_name: axiom-design
-    environment:
-      - PENPOT_DATABASE_URI=postgresql://axiom-db/axiom_hub?user=admin&password=axiom_secure_2026
-      - PENPOT_REDIS_URI=redis://axiom-redis:6379/0
+  # --- WHITEBOARD: Architecture & Flow sketching (Excalidraw) ---
+  axiom-sketch:
+    image: excalidraw/excalidraw:latest
+    container_name: axiom-sketch
     ports:
-      - "9001:9001"
+      - "9001:80"
     restart: always
 
 volumes:
