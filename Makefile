@@ -1,3 +1,7 @@
+
+code-map: ## Export project structure to JSON
+	uv run python3 libs/code_mapper.py --to-json
+
 ##@ Maintenance
 clean: ## Remove python caches and temporary files
 	find . -type d -name "__pycache__" -exec rm -rf {} +
