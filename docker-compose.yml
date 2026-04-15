@@ -47,13 +47,15 @@ services:
     container_name: axiom-bridge
     command: server standalone
     environment:
-      KESTRA_ADMIN_EMAIL: admin@axiom.local
-      KESTRA_ADMIN_PASSWORD: Password123!
       KESTRA_CONFIGURATION: |
         kestra:
           server:
+            setup:
+              enabled: false
             basic-auth:
               enabled: false
+              username: admin@axiom.io
+              password: Password123!
           repository:
             type: postgres
           queue:
