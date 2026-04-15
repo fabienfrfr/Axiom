@@ -47,9 +47,16 @@ services:
     container_name: axiom-bridge
     command: server standalone
     environment:
+      KESTRA_ADMIN_EMAIL: admin@axiom.local
+      KESTRA_ADMIN_PASSWORD: Password123!
       KESTRA_CONFIGURATION: |
         kestra:
+          server:
+            basic-auth:
+              enabled: false
           repository:
+            type: postgres
+          queue:
             type: postgres
           storage:
             type: local
@@ -83,10 +90,10 @@ services:
 
   # --- VISUALS: Infinite Canvas & Slides (tldraw) ---
   axiom-slides:
-    image: tldraw/tldraw:latest
+    image: foxxmd/tldraw:latest
     container_name: axiom-slides
     ports:
-      - "9002:80"
+      - "9002:5858"
     restart: always
 
   # --- DOCUMENTS: File Management & DOCX Editing (FileBrowser + OnlyOffice) ---

@@ -1,4 +1,4 @@
-# Axiom | AI Program Orchestration Platform (v2.1)
+# Axiom | AI Program Orchestration Platform
 
 ## Overview
 Axiom is a sovereign, lightweight stack built for Program Managers with a Tech Lead mindset. 
