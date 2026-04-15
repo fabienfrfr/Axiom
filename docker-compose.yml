@@ -1,7 +1,8 @@
 # Axiom - AI Program Management Stack
+# Strategy: Lightweight, 100% Open Source (MIT/Apache 2.0), Orchestration-as-Code.
 
 services:
-  # --- SHARED DATABASE: Core persistence layer ---
+  # --- PERSISTENCE: Core Data Layer ---
   axiom-db:
     image: postgres:15
     container_name: axiom-db
@@ -13,21 +14,21 @@ services:
       - pg_data:/var/lib/postgresql/data
     restart: always
 
-  # --- GOVERNANCE: Data structure & Roadmap (Baserow) ---
+  # --- GOVERNANCE: Roadmap & Asset Tracking (Baserow) ---
   axiom-governance:
     image: baserow/baserow:1.24.2
     container_name: axiom-governance
     environment:
-      BASEROW_PUBLIC_URL: http://localhost:8080
+      BASEROW_PUBLIC_URL: http://localhost:8083
       DATABASE_HOST: axiom-db
       DATABASE_PASSWORD: axiom_secure_2026
     ports:
-      - "8080:80"
+      - "8083:80"
     volumes:
       - baserow_data:/baserow/data
     restart: always
 
-  # --- ANALYTICS: SQL-based BI (Metabase) ---
+  # --- ANALYTICS: SQL-Driven BI (Metabase) ---
   axiom-analytics:
     image: metabase/metabase:latest
     container_name: axiom-analytics
@@ -40,21 +41,33 @@ services:
       - "3000:3000"
     restart: always
 
-  # --- ORCHESTRATION: Workflow automation (n8n) ---
+  # --- ORCHESTRATION: Workflow as Code (Kestra) ---
   axiom-bridge:
-    image: n8nio/n8n:latest
+    image: kestra/kestra:latest
     container_name: axiom-bridge
+    command: server standalone
     environment:
-      - DB_TYPE=postgresdb
-      - DB_POSTGRESDB_HOST=axiom-db
-      - DB_POSTGRESDB_PASSWORD=axiom_secure_2026
+      KESTRA_CONFIGURATION: |
+        kestra:
+          repository:
+            type: postgres
+          storage:
+            type: local
+            local:
+              base-path: /app/storage
+        datasources:
+          postgres:
+            url: jdbc:postgresql://axiom-db:5432/axiom_hub
+            username: admin
+            password: axiom_secure_2026
     ports:
-      - "5678:5678"
+      - "8080:8080"
     volumes:
-      - n8n_data:/home/node/.n8n
+      - kestra_data:/app/storage
+      - shared_docs:/home/kestra/axiom_docs
     restart: always
 
-  # --- VERSIONING: Git repository (Gitea) ---
+  # --- VERSIONING: Git Vault (Gitea) ---
   axiom-vault:
     image: gitea/gitea:latest
     container_name: axiom-vault
@@ -68,16 +81,49 @@ services:
       - gitea_data:/data
     restart: always
 
-  # --- WHITEBOARD: Architecture & Flow sketching (Excalidraw) ---
-  axiom-sketch:
-    image: excalidraw/excalidraw:latest
-    container_name: axiom-sketch
+  # --- VISUALS: Infinite Canvas & Slides (tldraw) ---
+  axiom-slides:
+    image: tldraw/tldraw:latest
+    container_name: axiom-slides
     ports:
-      - "9001:80"
+      - "9002:80"
+    restart: always
+
+  # --- DOCUMENTS: File Management & DOCX Editing (FileBrowser + OnlyOffice) ---
+  axiom-files:
+    image: filebrowser/filebrowser:latest
+    container_name: axiom-files
+    ports:
+      - "8081:80"
+    volumes:
+      - shared_docs:/srv
+      - filebrowser_db:/database.db
+    restart: always
+
+  axiom-editor:
+    image: onlyoffice/documentserver:latest
+    container_name: axiom-editor
+    expose:
+      - "80"
+    restart: always
+
+  # --- INTELLIGENCE: Local LLM Engine (LocalAI) ---
+  axiom-ai:
+    image: localai/localai:latest-aio-cpu
+    container_name: axiom-ai
+    environment:
+      - MODELS_PATH=/build/models
+    ports:
+      - "8082:8080"
+    volumes:
+      - ai_models:/build/models
     restart: always
 
 volumes:
   pg_data:
   baserow_data:
-  n8n_data:
+  kestra_data:
   gitea_data:
+  shared_docs:
+  filebrowser_db:
+  ai_models:
