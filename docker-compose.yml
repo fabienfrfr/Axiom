@@ -1,5 +1,5 @@
-# Axiom - Ultra-Light AI Program Management Stack
-# Strategy: Rust/Go Core, Python Scripting, SQL-as-Code.
+# Axiom - High-Performance AI Program Management Stack
+# Strategy: Rust/Go Core, Python Automation, SQL-as-Code.
 
 services:
   # --- CORE DATABASE ---
@@ -12,29 +12,6 @@ services:
       POSTGRES_DB: axiom_hub
     volumes:
       - pg_data:/var/lib/postgresql/data
-    restart: always
-
-  # --- GOVERNANCE: Airtable-like (NocoDB) ---
-  axiom-governance:
-    image: nocodb/nocodb:latest
-    container_name: axiom-governance
-    environment:
-      - NC_DB=pg://axiom-db:5432?u=admin&p=axiom_secure_2026&d=axiom_hub
-    ports:
-      - "8083:8080"
-    volumes:
-      - nocodb_data:/usr/app/data
-    restart: always
-
-  # --- ANALYTICS: SQL-as-Code (Evidence.dev) ---
-  # This serves the static files generated from your SQL/Markdown
-  axiom-analytics:
-    image: nginx:alpine
-    container_name: axiom-analytics
-    ports:
-      - "3000:80"
-    volumes:
-      - ./reports/build:/usr/share/nginx/html
     restart: always
 
   # --- ORCHESTRATION: Rust Engine (Windmill) ---
@@ -55,7 +32,31 @@ services:
     command: ["worker"]
     restart: always
 
-  # --- VERSIONING & WIKI: Git Vault (Gitea) ---
+  # --- ANALYTICS & SLIDES: Visivo (Go) ---
+  axiom-analytics:
+    image: visivo/visivo:latest
+    container_name: axiom-analytics
+    environment:
+      - VISIVO_DATABASE_URL=postgres://admin:axiom_secure_2026@axiom-db:5432/axiom_hub
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./visuals:/project
+    restart: always
+
+  # --- GOVERNANCE: Airtable-like (NocoDB) ---
+  axiom-governance:
+    image: nocodb/nocodb:latest
+    container_name: axiom-governance
+    environment:
+      - NC_DB=pg://axiom-db:5432?u=admin&p=axiom_secure_2026&d=axiom_hub
+    ports:
+      - "8083:8080"
+    volumes:
+      - nocodb_data:/usr/app/data
+    restart: always
+
+  # --- VERSIONING: Git Vault (Gitea) ---
   axiom-vault:
     image: gitea/gitea:latest
     container_name: axiom-vault
@@ -71,7 +72,7 @@ services:
       - gitea_data:/data
     restart: always
 
-  # --- VISUALS: Collaborative Sketching (Excalidraw) ---
+  # --- VISUALS: Whiteboarding (Excalidraw) ---
   axiom-sketch:
     image: excalidraw/excalidraw:latest
     container_name: axiom-sketch
