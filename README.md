@@ -1,29 +1,46 @@
 # Axiom | AI Program Orchestration Platform
 
-## Overview
-Axiom is a sovereign, lightweight stack built for Program Managers with a Tech Lead mindset. 
-It prioritizes **Apache 2.0** and **MIT** licensed tools, automation-as-code (YAML), and SQL-driven governance.
+## Strategy
+- **Sovereign**: 100% self-hosted & Open Source.
+- **As-Code**: Orchestration (YAML/Kestra) & Reporting (SQL/Evidence).
+- **Optimized**: High-performance stack for local hardware.
 
-## Component Map
-- **Slides (tldraw)**: Visual whiteboarding and presentation using the "Frames" system. (Apache 2.0)
-- **Docs (FileBrowser + OnlyOffice)**: Native DOCX/PDF management and editing. (MIT/Apache 2.0)
-- **Intelligence (LocalAI)**: Local LLM server for automated document analysis and mail sorting. (MIT)
-- **Governance (Baserow)**: Single source of truth for roadmaps and strategic assets. (MIT)
-- **Analytics (Metabase)**: SQL-powered Business Intelligence dashboards. (Apache 2.0)
-- **Orchestration (Kestra)**: Event-driven orchestration and data pipelines defined as YAML-code. (Apache 2.0)
-- **Vault (Gitea)**: Self-hosted Git for versioning YAML flows, scripts, and reports. (MIT)
+## Stack
+| Component | Technology | Role |
+| :--- | :--- | :--- |
+| **Orchestration** | Windmill | Workflow-as-Code (YAML) |
+| **Governance** | NocoDB | Smart Asset Tracking |
+| **Analytics** | Evidence.dev | SQL-based Static BI |
+| **Intelligence** | LocalAI | Private LLM API |
+| **Versioning** | Gitea | Git-based SSOT |
+| **Visuals** | Excalidraw | Infinite Canvas |
+| **Storage** | FileBrowser | Minimalist DMS |
 
-## Setup
-1. Deploy the stack: `docker compose up -d`
-2. Service Access:
-   - **Visual Slides**: http://localhost:9002
-   - **Docs & DOCX**: http://localhost:8081
-   - **Orchestration (Kestra)**: http://localhost:8080 (UI)
-   - **Governance (Baserow)**: http://localhost:8083
-   - **Analytics**: http://localhost:3000
+
+## Quick Start
+```bash
+make up             # Deploy services
+make report-build   # Refresh Evidence dashboards
+make sync           # Update project structure
+```
+
+## Service Access
+   - **Orchestration (Windmill)**: http://localhost:8080
+   - **Governance (NocoDB)**: http://localhost:8083
+   - **Analytics (Evidence)**: http://localhost:3000
+   - **Visual Sketch**: http://localhost:9002
+   - **Files Management**: http://localhost:8081
    - **Git Vault**: http://localhost:3001
    - **AI API**: http://localhost:8082
 
 ## Automation Flow
-Workflows are defined in YAML and versioned in Gitea. 
-Kestra monitors the `shared_docs` volume to trigger document processing (e.g., summary generation via LocalAI or PDF conversion) whenever a file is uploaded via FileBrowser.
+Workflows are defined as Python or Rust scripts within **Windmill** and versioned in **Gitea**. 
+1. **Trigger**: Windmill monitors folders or receives webhooks.
+2. **Processing**: Scripts call **LocalAI** for document extraction or summarization.
+3. **Governance**: Data is structured and injected into **NocoDB**.
+4. **Reporting**: `make report-build` triggers **Evidence.dev** to compile SQL data into static dashboards.
+
+## Maintenance
+- **Update Logic**: `make sync` to export the latest project structure to JSON.
+- **Build Reports**: `make report-build` to refresh the analytics site.
+- **Clean System**: `make clean` to wipe caches and temporary containers.

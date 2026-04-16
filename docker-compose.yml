@@ -1,10 +1,10 @@
-# Axiom - AI Program Management Stack
-# Strategy: Lightweight, 100% Open Source (MIT/Apache 2.0), Orchestration-as-Code.
+# Axiom - Ultra-Light AI Program Management Stack
+# Strategy: Rust/Go Core, Python Scripting, SQL-as-Code.
 
 services:
-  # --- PERSISTENCE: Core Data Layer ---
+  # --- CORE DATABASE ---
   axiom-db:
-    image: postgres:15
+    image: postgres:15-alpine
     container_name: axiom-db
     environment:
       POSTGRES_USER: admin
@@ -14,75 +14,56 @@ services:
       - pg_data:/var/lib/postgresql/data
     restart: always
 
-  # --- GOVERNANCE: Roadmap & Asset Tracking (Baserow) ---
+  # --- GOVERNANCE: Airtable-like (NocoDB) ---
   axiom-governance:
-    image: baserow/baserow:1.24.2
+    image: nocodb/nocodb:latest
     container_name: axiom-governance
     environment:
-      BASEROW_PUBLIC_URL: http://localhost:8083
-      DATABASE_HOST: axiom-db
-      DATABASE_PASSWORD: axiom_secure_2026
+      - NC_DB=pg://axiom-db:5432?u=admin&p=axiom_secure_2026&d=axiom_hub
     ports:
-      - "8083:80"
+      - "8083:8080"
     volumes:
-      - baserow_data:/baserow/data
+      - nocodb_data:/usr/app/data
     restart: always
 
-  # --- ANALYTICS: SQL-Driven BI (Metabase) ---
+  # --- ANALYTICS: SQL-as-Code (Evidence.dev) ---
+  # This serves the static files generated from your SQL/Markdown
   axiom-analytics:
-    image: metabase/metabase:latest
+    image: nginx:alpine
     container_name: axiom-analytics
-    environment:
-      MB_DB_TYPE: postgres
-      MB_DB_DBNAME: axiom_analytics_db
-      MB_DB_HOST: axiom-db
-      MB_DB_PASS: axiom_secure_2026
     ports:
-      - "3000:3000"
-    restart: always
-
-  # --- ORCHESTRATION: Workflow as Code (Kestra) ---
-  axiom-bridge:
-    image: kestra/kestra:latest
-    container_name: axiom-bridge
-    command: server standalone
-    environment:
-      KESTRA_CONFIGURATION: |
-        kestra:
-          server:
-            setup:
-              enabled: false
-            basic-auth:
-              enabled: false
-              username: admin@axiom.io
-              password: Password123!
-          repository:
-            type: postgres
-          queue:
-            type: postgres
-          storage:
-            type: local
-            local:
-              base-path: /app/storage
-        datasources:
-          postgres:
-            url: jdbc:postgresql://axiom-db:5432/axiom_hub
-            username: admin
-            password: axiom_secure_2026
-    ports:
-      - "8080:8080"
+      - "3000:80"
     volumes:
-      - kestra_data:/app/storage
-      - shared_docs:/home/kestra/axiom_docs
+      - ./reports/build:/usr/share/nginx/html
     restart: always
 
-  # --- VERSIONING: Git Vault (Gitea) ---
+  # --- ORCHESTRATION: Rust Engine (Windmill) ---
+  axiom-bridge:
+    image: ghcr.io/windmill-labs/windmill-slim:latest
+    container_name: axiom-bridge
+    environment:
+      - DATABASE_URL=postgres://admin:axiom_secure_2026@axiom-db:5432/axiom_hub
+    ports:
+      - "8080:8000"
+    restart: always
+
+  axiom-worker:
+    image: ghcr.io/windmill-labs/windmill:latest
+    container_name: axiom-worker
+    environment:
+      - DATABASE_URL=postgres://admin:axiom_secure_2026@axiom-db:5432/axiom_hub
+    command: ["worker"]
+    restart: always
+
+  # --- VERSIONING & WIKI: Git Vault (Gitea) ---
   axiom-vault:
     image: gitea/gitea:latest
     container_name: axiom-vault
     environment:
       - GITEA__database__DB_TYPE=postgres
       - GITEA__database__HOST=axiom-db:5432
+      - GITEA__database__NAME=axiom_hub
+      - GITEA__database__USER=admin
       - GITEA__database__PASS=axiom_secure_2026
     ports:
       - "3001:3000"
@@ -90,38 +71,29 @@ services:
       - gitea_data:/data
     restart: always
 
-  # --- VISUALS: Infinite Canvas & Slides (tldraw) ---
-  axiom-slides:
-    image: foxxmd/tldraw:latest
-    container_name: axiom-slides
+  # --- VISUALS: Collaborative Sketching (Excalidraw) ---
+  axiom-sketch:
+    image: excalidraw/excalidraw:latest
+    container_name: axiom-sketch
     ports:
-      - "9002:5858"
+      - "9002:80"
     restart: always
 
-  # --- DOCUMENTS: File Management & DOCX Editing (FileBrowser + OnlyOffice) ---
+  # --- FILE MANAGEMENT ---
   axiom-files:
     image: filebrowser/filebrowser:latest
     container_name: axiom-files
     ports:
       - "8081:80"
     volumes:
-      - shared_docs:/srv
+      - ./shared_docs:/srv
       - filebrowser_db:/database.db
     restart: always
 
-  axiom-editor:
-    image: onlyoffice/documentserver:latest
-    container_name: axiom-editor
-    expose:
-      - "80"
-    restart: always
-
-  # --- INTELLIGENCE: Local LLM Engine (LocalAI) ---
+  # --- INTELLIGENCE: Local LLM API ---
   axiom-ai:
     image: localai/localai:latest-aio-cpu
     container_name: axiom-ai
-    environment:
-      - MODELS_PATH=/build/models
     ports:
       - "8082:8080"
     volumes:
@@ -130,9 +102,7 @@ services:
 
 volumes:
   pg_data:
-  baserow_data:
-  kestra_data:
+  nocodb_data:
   gitea_data:
-  shared_docs:
   filebrowser_db:
   ai_models:
